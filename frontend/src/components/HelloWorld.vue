@@ -24,13 +24,19 @@ export default {
     };
   },
   methods: {
+    /**
+     * 这里使用el-input有个坑 当type是原生的file类型时 change事件的回调函数 ev是一个空字符串 这里需要使用原生的input标签
+     * 这里使用Object.assign 是为了在二次选择文件时覆盖之前选择的文件
+     */
     handleFileChange(e) {
       const [file] = e.target.files;
       if (!file) return;
       Object.assign(this.$data, this.$options.data());
       this.file = file;
     },
-    // 生成文件切片
+    /**
+     * 这里利用buffer的slice方法将文件分割成多个文件切片(更小的buffer)
+     */
     createFileChunk(file, length = LENGTH) {
       const fileChunkList = [];
       const chunkSize = Math.ceil(file.size / length);
@@ -41,7 +47,9 @@ export default {
       }
       return fileChunkList;
     },
-    // 上传切片
+    /**
+     * 利用FormData类封装buffer 进行切片上传
+     */
     async uploadChunks() {
       const requestList = this.data
         .map(({ chunk }, index) => {
@@ -61,7 +69,9 @@ export default {
       const finish = await this.mergeRequest(); // 发送合并请求
       global.console.log(finish);
     },
-    // 合并切片
+    /**
+     * 发送合并切片的请求
+     */
     mergeRequest() {
       return request({
         method: 'post',
